@@ -139,13 +139,19 @@ void readAllDifferentialParallel(long *result1, long *result2) {
   }
 
   // Update MUX for BOTH ADCs simultaneously (using updateAllMUX)
-  updateAllMUX(mux_value);
+  // updateAllMUX(mux_value);
 
   // Now read from both ADCs
   // ADC1 read
   ADC1.CS_LOW(); // if (ADC1._CS_pin != -1) digitalWrite(ADC1._CS_pin, LOW);
   ADC1._spi->beginTransaction(SPISettings(1920000, MSBFIRST, SPI_MODE1));
+
+  // Update MUX
+  ADC1._spi->transfer(0x50 | MUX_REG);  // WREG
+  ADC1._spi->transfer(0x00);
+  ADC1._spi->transfer(mux_value);
   
+  // Read data
   ADC1._spi->transfer(0b11111100);  // SYNC
   delayMicroseconds(4);
   ADC1._spi->transfer(0b11111111);  // WAKEUP
@@ -169,6 +175,11 @@ void readAllDifferentialParallel(long *result1, long *result2) {
   // ADC2 read (same process)
   ADC2.CS_LOW(); // if (ADC2._CS_pin != -1) digitalWrite(ADC2._CS_pin, LOW);
   ADC2._spi->beginTransaction(SPISettings(1920000, MSBFIRST, SPI_MODE1));
+
+  // Update MUX
+  ADC2._spi->transfer(0x50 | MUX_REG);
+  ADC2._spi->transfer(0x00);
+  ADC2._spi->transfer(mux_value);
   
   ADC2._spi->transfer(0b11111100);  // SYNC
   delayMicroseconds(4);
